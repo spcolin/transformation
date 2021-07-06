@@ -203,9 +203,11 @@ def train(args):
 
     if args.sche_type=='original':
         optimizer, scheduler = fetch_optimizer(args, model)
+        print("OneCycle scheduler adopted")
     else:
         optimizer, scheduler = new_optimizer(args, model)
         schedule_interval=int(args.num_steps/40)
+        print("Exponential scheduler adopted")
 
     total_steps = 0
     scaler = GradScaler(enabled=args.mixed_precision)
