@@ -117,9 +117,7 @@ class RAFT(nn.Module):
 
         B, _, H, W = coords1.shape
 
-        tmp_coord = utils.coords_grid(B, H, W).to(coords1.device)
-        ones = torch.ones(B, 1, H, W).to(coords1.device)
-        homo_coord = torch.cat([tmp_coord, ones], 1).permute(0, 2, 3, 1).unsqueeze(4).clone().detach()
+
 
         if flow_init is not None:
             coords1 = coords1 + flow_init
@@ -139,7 +137,14 @@ class RAFT(nn.Module):
 
             final_trans = identity_trans + delta_trans
 
-            transformed_coord = torch.matmul(final_trans, homo_coord.detach()).squeeze(4)  # B*46*62*3
+            # strange part
+            tmp_coord = utils.coords_grid(B, H, W).to(coords1.device)
+            ones = torch.ones(B, 1, H, W).to(coords1.device)
+            homo_coord = torch.cat([tmp_coord, ones], 1).permute(0, 2, 3, 1).unsqueeze(4).clone().detach()
+
+            # strange part
+
+            transformed_coord = torch.matmul(final_trans, homo_coord).squeeze(4)  # B*46*62*3
 
             inhomo_coord = transformed_coord[:, :, :, :2] / transformed_coord[:, :, :, -1].unsqueeze(3)  # B*46*62*2
 
