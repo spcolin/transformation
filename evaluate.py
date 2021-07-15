@@ -175,6 +175,7 @@ if __name__ == '__main__':
     parser.add_argument('--alternate_corr', action='store_true', help='use efficent correlation implementation')
 
     parser.add_argument('--data_root', default='datasets/', help="the root of datasets folder")
+    parser.add_argument('--loss_type')
 
     args = parser.parse_args()
 
