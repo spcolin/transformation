@@ -19,11 +19,11 @@ from core.utils.utils import InputPadder, forward_interpolate
 
 
 @torch.no_grad()
-def create_sintel_submission(model, iters=32, warm_start=False, output_path='sintel_submission'):
+def create_sintel_submission(model, args,iters=32, warm_start=False, output_path='sintel_submission'):
     """ Create submission for the Sintel leaderboard """
     model.eval()
     for dstype in ['clean', 'final']:
-        test_dataset = datasets.MpiSintel(split='test', aug_params=None, dstype=dstype)
+        test_dataset = datasets.MpiSintel(split='test', aug_params=None, dstype=dstype,root=args.data_root+'datasets/Sintel')
         
         flow_prev, sequence_prev = None, None
         for test_id in range(len(test_dataset)):
@@ -51,10 +51,10 @@ def create_sintel_submission(model, iters=32, warm_start=False, output_path='sin
 
 
 @torch.no_grad()
-def create_kitti_submission(model, iters=24, output_path='kitti_submission'):
+def create_kitti_submission(model, args,iters=24, output_path='kitti_submission'):
     """ Create submission for the Sintel leaderboard """
     model.eval()
-    test_dataset = datasets.KITTI(split='testing', aug_params=None)
+    test_dataset = datasets.KITTI(split='testing', aug_params=None,root=args.data_root+'datasets/KITTI')
 
     if not os.path.exists(output_path):
         os.makedirs(output_path)
@@ -173,6 +173,9 @@ if __name__ == '__main__':
     parser.add_argument('--small', action='store_true', help='use small model')
     parser.add_argument('--mixed_precision', action='store_true', help='use mixed precision')
     parser.add_argument('--alternate_corr', action='store_true', help='use efficent correlation implementation')
+
+    parser.add_argument('--data_root', default='datasets/', help="the root of datasets folder")
+
     args = parser.parse_args()
 
     model = torch.nn.DataParallel(RAFT(args))
@@ -181,17 +184,17 @@ if __name__ == '__main__':
     model.cuda()
     model.eval()
 
-    # create_sintel_submission(model.module, warm_start=True)
-    # create_kitti_submission(model.module)
+    create_sintel_submission(model.module,args, warm_start=True)
+    create_kitti_submission(model.module,args)
 
-    with torch.no_grad():
-        if args.dataset == 'chairs':
-            validate_chairs(model.module)
-
-        elif args.dataset == 'sintel':
-            validate_sintel(model.module)
-
-        elif args.dataset == 'kitti':
-            validate_kitti(model.module)
+    # with torch.no_grad():
+    #     if args.dataset == 'chairs':
+    #         validate_chairs(model.module,args)
+    #
+    #     elif args.dataset == 'sintel':
+    #         validate_sintel(model.module,args)
+    #
+    #     elif args.dataset == 'kitti':
+    #         validate_kitti(model.module,args)
 
 
